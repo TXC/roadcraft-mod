@@ -19,7 +19,26 @@ func TestModifyClsFileText(t *testing.T) {
 		expectedContains string
 	}{
 		{
-			name: "XML with AllowedPercentage",
+			name: "Actual CLS format with allowedPercent",
+			input: `   prop_truck_mobile_sand_screen   =   {
+      allowedPercent   =   0.4
+      belt1SpeedCoef   =   0.3
+   }`,
+			percentage:       0.0,
+			expectedModified: true,
+			expectedContains: "allowedPercent   =   0.0",
+		},
+		{
+			name: "CLS format with different spacing",
+			input: `prop_truck_mobile_sand_screen = {
+   allowedPercent = 0.5
+}`,
+			percentage:       0.0,
+			expectedModified: true,
+			expectedContains: "allowedPercent = 0.0",
+		},
+		{
+			name: "XML with AllowedPercentage (backwards compatibility)",
 			input: `<?xml version="1.0" encoding="UTF-8"?>
 <_templates>
   <Item>
@@ -41,16 +60,18 @@ func TestModifyClsFileText(t *testing.T) {
 			expectedContains: "<AllowedPercentage>50.0</AllowedPercentage>",
 		},
 		{
-			name: "XML without AllowedPercentage",
-			input: `<Item>
-    <Name>Test</Name>
-</Item>`,
+			name: "File without allowedPercent",
+			input: `properties = {
+   geom = {
+      nameTpl = "test"
+   }
+}`,
 			percentage:       0.0,
 			expectedModified: false,
-			expectedContains: "<Name>Test</Name>",
+			expectedContains: "nameTpl",
 		},
 		{
-			name: "Case insensitive allowedpercentage",
+			name: "Case insensitive allowedpercentage (XML)",
 			input: `<item>
     <allowedpercentage>0.5</allowedpercentage>
 </item>`,
@@ -82,8 +103,11 @@ func TestModifyClsFileText(t *testing.T) {
 				if strings.Contains(tt.input, "OtherProperty") && !strings.Contains(resultStr, "OtherProperty") {
 					t.Error("expected OtherProperty to be preserved")
 				}
-				if strings.Contains(tt.input, "Name") && !strings.Contains(resultStr, "Name") {
-					t.Error("expected Name to be preserved")
+				if strings.Contains(tt.input, "belt1SpeedCoef") && !strings.Contains(resultStr, "belt1SpeedCoef") {
+					t.Error("expected belt1SpeedCoef to be preserved")
+				}
+				if strings.Contains(tt.input, "nameTpl") && !strings.Contains(resultStr, "nameTpl") {
+					t.Error("expected nameTpl to be preserved")
 				}
 			}
 		})
@@ -92,13 +116,12 @@ func TestModifyClsFileText(t *testing.T) {
 
 // TestModifyClsFile tests the main modification function
 func TestModifyClsFile(t *testing.T) {
-	input := `<?xml version="1.0" encoding="UTF-8"?>
-<_templates>
-  <Item>
-    <AllowedPercentage>0.5</AllowedPercentage>
-    <Name>Vehicle</Name>
-  </Item>
-</_templates>`
+	input := `properties = {
+   prop_truck_mobile_sand_screen = {
+      allowedPercent = 0.5
+      belt1SpeedCoef = 0.3
+   }
+}`
 
 	result, modified, err := modifyClsFile([]byte(input), 0.0)
 	if err != nil {
@@ -110,13 +133,13 @@ func TestModifyClsFile(t *testing.T) {
 	}
 
 	resultStr := string(result)
-	if !strings.Contains(resultStr, "<AllowedPercentage>0.0</AllowedPercentage>") {
-		t.Errorf("expected AllowedPercentage to be 0.0, got:\n%s", resultStr)
+	if !strings.Contains(resultStr, "allowedPercent = 0.0") {
+		t.Errorf("expected allowedPercent to be 0.0, got:\n%s", resultStr)
 	}
 
-	// Verify Name field is preserved
-	if !strings.Contains(resultStr, "<Name>Vehicle</Name>") {
-		t.Error("expected Name field to be preserved")
+	// Verify belt1SpeedCoef field is preserved
+	if !strings.Contains(resultStr, "belt1SpeedCoef") {
+		t.Error("expected belt1SpeedCoef field to be preserved")
 	}
 }
 
@@ -126,13 +149,12 @@ func TestCreateAndModifyPakFile(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create test .cls file content
-	clsContent := `<?xml version="1.0" encoding="UTF-8"?>
-<_templates>
-  <Item>
-    <AllowedPercentage>0.5</AllowedPercentage>
-    <Name>TestVehicle</Name>
-  </Item>
-</_templates>`
+	clsContent := `properties = {
+   prop_truck_mobile_sand_screen = {
+      allowedPercent = 0.5
+      belt1SpeedCoef = 0.3
+   }
+}`
 
 	// Create test PAK file
 	inputPak := filepath.Join(tempDir, "test_input.pak")
@@ -186,11 +208,11 @@ func TestCreateAndModifyPakFile(t *testing.T) {
 				}
 
 				contentStr := string(content)
-				if !strings.Contains(contentStr, "<AllowedPercentage>0.0</AllowedPercentage>") {
-					t.Errorf("expected AllowedPercentage to be 0.0, got:\n%s", contentStr)
+				if !strings.Contains(contentStr, "allowedPercent = 0.0") {
+					t.Errorf("expected allowedPercent to be 0.0, got:\n%s", contentStr)
 				}
-				if !strings.Contains(contentStr, "<Name>TestVehicle</Name>") {
-					t.Error("expected Name field to be preserved")
+				if !strings.Contains(contentStr, "belt1SpeedCoef") {
+					t.Error("expected belt1SpeedCoef field to be preserved")
 				}
 
 				// Verify Store compression is used
@@ -210,8 +232,8 @@ func TestCreateAndModifyPakFile(t *testing.T) {
 		// Create PAK with multiple .cls files
 		multiPak := filepath.Join(tempDir, "test_multi.pak")
 		if err := createTestPak(multiPak, map[string]string{
-			"vehicles/vehicle1.cls": `<_templates><Item><AllowedPercentage>1.0</AllowedPercentage></Item></_templates>`,
-			"vehicles/vehicle2.cls": `<_templates><Item><AllowedPercentage>2.0</AllowedPercentage></Item></_templates>`,
+			"vehicles/vehicle1.cls": `properties = { prop_truck = { allowedPercent = 1.0 } }`,
+			"vehicles/vehicle2.cls": `properties = { prop_truck = { allowedPercent = 2.0 } }`,
 		}); err != nil {
 			t.Fatalf("failed to create multi pak: %v", err)
 		}
@@ -242,11 +264,11 @@ func TestCreateAndModifyPakFile(t *testing.T) {
 
 			contentStr := string(content)
 			if f.Name == "vehicles/vehicle1.cls" {
-				if !strings.Contains(contentStr, "<AllowedPercentage>10.0</AllowedPercentage>") {
+				if !strings.Contains(contentStr, "allowedPercent = 10.0") {
 					t.Errorf("vehicle1.cls: expected 10.0, got:\n%s", contentStr)
 				}
 			} else if f.Name == "vehicles/vehicle2.cls" {
-				if !strings.Contains(contentStr, "<AllowedPercentage>2.0</AllowedPercentage>") {
+				if !strings.Contains(contentStr, "allowedPercent = 2.0") {
 					t.Errorf("vehicle2.cls: expected 2.0 (unchanged), got:\n%s", contentStr)
 				}
 			}
@@ -261,7 +283,7 @@ func TestPreserveNonClsFiles(t *testing.T) {
 	inputPak := filepath.Join(tempDir, "test_preserve.pak")
 	textContent := "This is a text file that should not be modified"
 	if err := createTestPak(inputPak, map[string]string{
-		"vehicles/test.cls": `<_templates><Item><AllowedPercentage>1.0</AllowedPercentage></Item></_templates>`,
+		"vehicles/test.cls": `properties = { prop_truck = { allowedPercent = 1.0 } }`,
 		"data/readme.txt":   textContent,
 		"data/config.xml":   "<config><value>123</value></config>",
 	}); err != nil {

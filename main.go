@@ -208,23 +208,24 @@ func modifyClsFileText(content []byte, allowedPercentage float64) ([]byte, bool,
 	text := string(content)
 	modified := false
 
-	// Use regex to find and replace AllowedPercentage values
-	// Pattern matches: <AllowedPercentage>NUMBER</AllowedPercentage>
-	re := regexp.MustCompile(`(<AllowedPercentage[^>]*>)([^<]+)(</AllowedPercentage>)`)
+	// Pattern for the actual CLS format: allowedPercent = VALUE
+	// This matches the format: allowedPercent   =   0.4
+	re := regexp.MustCompile(`(?m)(allowedPercent\s*=\s*)([0-9]+\.?[0-9]*)`)
 
 	matches := re.FindAllStringSubmatch(text, -1)
 	if len(matches) > 0 {
 		// Replace each occurrence
-		result := re.ReplaceAllString(text, fmt.Sprintf("${1}%.1f${3}", allowedPercentage))
+		result := re.ReplaceAllString(text, fmt.Sprintf("${1}%.1f", allowedPercentage))
 		if result != text {
 			modified = true
 			text = result
 		}
 	}
 
-	// Also try case-insensitive patterns for other formats
+	// Also try XML format for backwards compatibility (AllowedPercentage)
 	if !modified {
 		patterns := []string{
+			`(<AllowedPercentage[^>]*>)([^<]+)(</AllowedPercentage>)`,
 			`(<allowedpercentage[^>]*>)([^<]+)(</allowedpercentage>)`,
 			`("allowedpercentage"\s*:\s*)([0-9.]+)`,
 			`("AllowedPercentage"\s*:\s*)([0-9.]+)`,

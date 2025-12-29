@@ -5,10 +5,11 @@ A Go application that modifies vehicles in the game RoadCraft from Sabre Interac
 ## Features
 
 - Reads and modifies PAK files (ZIP files with Store compression)
-- Modifies `AllowedPercentage` values in `.cls` files
+- Modifies `allowedPercent` values in `.cls` files
 - Supports targeting specific files or modifying all `.cls` files
 - Lists all `.cls` files in a PAK archive
 - Preserves original file structure and content
+- Supports both the actual CLS format and XML format (backwards compatibility)
 
 ## Installation
 
@@ -99,9 +100,25 @@ roadcraft-mod -pak "C:\Program Files (x86)\Steam\steamapps\common\RoadCraft\paks
 
 1. Opens the PAK file (which is a ZIP archive with Store compression)
 2. Finds `.cls` files matching the criteria
-3. Modifies the `AllowedPercentage` XML tag value
-4. Preserves all other content in the files
-5. Writes the modified PAK file back
+3. Modifies the `allowedPercent` value in the CLS property format
+4. Preserves all other content in the files (spacing, structure, other properties)
+5. Writes the modified PAK file back with Store compression
+
+## CLS File Format
+
+The `.cls` files use a custom property format:
+
+```
+properties = {
+   prop_truck_mobile_sand_screen = {
+      allowedPercent = 0.4
+      belt1SpeedCoef = 0.3
+      ...
+   }
+}
+```
+
+The tool modifies the `allowedPercent` field while preserving all other content and formatting.
 
 ## License
 
