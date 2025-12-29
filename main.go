@@ -211,7 +211,7 @@ func modifyClsFileText(content []byte, allowedPercentage float64) ([]byte, bool,
 	// Use regex to find and replace AllowedPercentage values
 	// Pattern matches: <AllowedPercentage>NUMBER</AllowedPercentage>
 	re := regexp.MustCompile(`(<AllowedPercentage[^>]*>)([^<]+)(</AllowedPercentage>)`)
-	
+
 	matches := re.FindAllStringSubmatch(text, -1)
 	if len(matches) > 0 {
 		// Replace each occurrence
