@@ -32,3 +32,8 @@ For example, on "Zikz 605E - Mobile Scalper", we need to update the file "ssl/au
 4. Use dependency injection patterns where appropriate
 5. Write unit tests for new functionality. Use table-driven unit tests when possible.
 6. Document public APIs and complex logic. Suggest changes to the `docs/` folder when appropriate
+7. Tests should be placed in the same package as the code they are testing, using `_test.go` suffix for test files.
+8. Ensure all tests pass before submitting a pull request.
+9. Try to achieve high test coverage for new code.
+10. Use descriptive commit messages that explain the purpose of the changes.
+11. Review existing code for style and consistency before adding new code.
