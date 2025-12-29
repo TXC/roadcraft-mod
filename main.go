@@ -210,7 +210,8 @@ func modifyClsFileText(content []byte, allowedPercentage float64) ([]byte, bool,
 
 	// Pattern for the actual CLS format: allowedPercent = VALUE
 	// This matches the format: allowedPercent   =   0.4
-	re := regexp.MustCompile(`(?m)(allowedPercent\s*=\s*)([0-9]+\.?[0-9]*)`)
+	// Pattern supports integers and decimals like 0.4, .5, 1.0, etc.
+	re := regexp.MustCompile(`(?m)(allowedPercent\s*=\s*)([0-9]*\.?[0-9]+)`)
 
 	matches := re.FindAllStringSubmatch(text, -1)
 	if len(matches) > 0 {
