@@ -6,7 +6,10 @@ The file is a actually a ZIP-file, compressed with "Store".
 
 For example, on "Zikz 605E - Mobile Scalper", we need to update the file "ssl/autogen_designer_wizard/trucks/auto_ziks605e_mobile_scalper_res/auto_zikz_605e_mobile_scalper_res.cls" inside "default_other.pak".
 - To allow scraping everywhere, we change the "allowedpercentage" to "0".
-- To increase the quarry radius, "UsableCheckerDistance" from "150" to "600".
+- To increase the quarry radius:
+  - "properties.prop_truck_mobile_sand_screen.sandDistance" from "150" to "600".
+  - "properties.prop_usable.smartsEntryPoints.SandStorage.checkers.UsableCheckerDistance.distance" from "150" to "600".
+  - "properties.prop_usable.smartsEntryPoints.SandStorage.focusDistance" from "150" to "600".
 
 ## Code Standards
 
@@ -37,3 +40,67 @@ For example, on "Zikz 605E - Mobile Scalper", we need to update the file "ssl/au
 9. Try to achieve high test coverage for new code.
 10. Use descriptive commit messages that explain the purpose of the changes.
 11. Review existing code for style and consistency before adding new code.
+
+
+## Additional Notes
+
+The CLS format for RoadCraft is not officially documented. Information about it has been gathered from community sources and reverse engineering efforts. When making changes to CLS files, ensure that you validate the changes in-game to confirm they work as intended.
+
+For the "Zikz 605E - Mobile Scalper", the original CLS file looks like this:
+```
+properties   =   {
+   geom   =   {
+      nameTpl   =   "zikz_605e_mobile_scalper_res"
+   }
+   prop_truck_view_controller   =   {
+      engineFiringDelay   =   1000
+   }
+...
+   prop_truck_mobile_sand_screen   =   {
+      chainName   =   "Ramp"
+      allowedMaterials   =   [
+         {
+            material   =   "sand"
+         },
+         {
+            material   =   "mud_sand"
+         },
+         {
+            material   =   "sand_dry"
+         },
+         {
+            material   =   "sand_mud"
+         }
+      ]
+      locator   =   "SandReciever"
+      sandOnBelt   =   True
+      materialCheckRadius   =   6
+      allowedPercent   =   0.4
+      belt1SpeedCoef   =   0.3
+      belt2SpeedCoef   =   0.8
+      sandDistance   =   150
+   }
+...
+   prop_usable   =   {
+      smartsEntryPoints   =   {
+         MalfuctionSmartPoint   =   {
+            __type   =   "SmartEntryPointMalfunction"
+         }
+         SandStorage   =   {
+            checkers   =   {
+               UsableCheckerDistance   =   {
+                  distance   =   150
+                  tracker   =   {
+                     locator   =   "SandReciever"
+                     __type   =   "Tracker"
+                  }
+               }
+            }
+            focusDistance   =   150
+            __type   =   "SmartEntryPointMobileSandScreen"
+         }
+      }
+   }
+...
+}
+```
