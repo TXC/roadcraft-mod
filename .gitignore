@@ -9,7 +9,7 @@
 *.dylib
 
 # Application binary
-roadcraft-mod
+bin/
 
 # Test binary, built with `go test -c`
 *.test
